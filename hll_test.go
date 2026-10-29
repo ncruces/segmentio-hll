@@ -73,12 +73,12 @@ func Test_ZeroValue_WithDefaultSettings(t *testing.T) {
 
 	tests := []struct {
 		label  string
-		op     func(hll Hll) interface{}
-		result interface{}
+		op     func(hll Hll) any
+		result any
 	}{
 		{
 			label: "AddRaw",
-			op: func(hll Hll) interface{} {
+			op: func(hll Hll) any {
 				hll.AddRaw(1)
 				return hll.Cardinality()
 			},
@@ -87,12 +87,12 @@ func Test_ZeroValue_WithDefaultSettings(t *testing.T) {
 
 		{
 			label:  "Cardinality",
-			op:     func(hll Hll) interface{} { return hll.Cardinality() },
+			op:     func(hll Hll) any { return hll.Cardinality() },
 			result: uint64(0),
 		},
 		{
 			label: "StrictUnion",
-			op: func(hll Hll) interface{} {
+			op: func(hll Hll) any {
 				_ = hll.StrictUnion(Hll{})
 				return hll.Cardinality()
 			},
@@ -100,7 +100,7 @@ func Test_ZeroValue_WithDefaultSettings(t *testing.T) {
 		},
 		{
 			label: "Union",
-			op: func(hll Hll) interface{} {
+			op: func(hll Hll) any {
 				hll.Union(Hll{})
 				return hll.Cardinality()
 			},
@@ -108,12 +108,12 @@ func Test_ZeroValue_WithDefaultSettings(t *testing.T) {
 		},
 		{
 			label:  "ToBytes",
-			op:     func(hll Hll) interface{} { return hll.ToBytes() },
+			op:     func(hll Hll) any { return hll.ToBytes() },
 			result: []byte{0x11, 0xbf, 0x7f},
 		},
 		{
 			label: "Clear",
-			op: func(hll Hll) interface{} {
+			op: func(hll Hll) any {
 				hll.Clear()
 				return hll.Cardinality()
 			},
@@ -121,7 +121,7 @@ func Test_ZeroValue_WithDefaultSettings(t *testing.T) {
 		},
 		{
 			label: "Settings",
-			op: func(hll Hll) interface{} {
+			op: func(hll Hll) any {
 				return hll.Settings()
 			},
 			result: defaults,
@@ -406,7 +406,7 @@ func Test_MismatchedStorageUnions(t *testing.T) {
 		}
 	}
 	newHllFunc := func(n int) (hll Hll) {
-		for i := 0; i < n; i++ {
+		for range n {
 			hll.AddRaw(rand.Uint64())
 			used[randGen()] = struct{}{}
 		}
@@ -618,13 +618,13 @@ func assertEmpty(t *testing.T, hll Hll) bool {
 }
 
 func assertExplicit(t *testing.T, hll Hll) bool {
-	return assert.Equal(t, reflect.TypeOf(explicitStorage{}), reflect.TypeOf(hll.storage), "expected explicit storage")
+	return assert.Equal(t, reflect.TypeFor[explicitStorage](), reflect.TypeOf(hll.storage), "expected explicit storage")
 }
 
 func assertSparse(t *testing.T, hll Hll) bool {
-	return assert.Equal(t, reflect.TypeOf(sparseStorage{}), reflect.TypeOf(hll.storage), "expected sparse storage")
+	return assert.Equal(t, reflect.TypeFor[sparseStorage](), reflect.TypeOf(hll.storage), "expected sparse storage")
 }
 
 func assertDense(t *testing.T, hll Hll) bool {
-	return assert.Equal(t, reflect.TypeOf(denseStorage{}), reflect.TypeOf(hll.storage), "expected dense storage")
+	return assert.Equal(t, reflect.TypeFor[denseStorage](), reflect.TypeOf(hll.storage), "expected dense storage")
 }
